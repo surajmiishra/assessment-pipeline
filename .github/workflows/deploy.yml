@@ -2,7 +2,8 @@ name: Deploy Apps Script
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -20,10 +21,10 @@ jobs:
 
       - name: Restore authentication
         shell: bash
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
-          cat <<EOF > ~/.clasprc.json
-${{ secrets.CLASPRC_JSON }}
-EOF
+          printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
 
       - name: Debug
         run: |
