@@ -18,21 +18,15 @@ jobs:
 
       - run: npm install -g @google/clasp
 
-      - name: Write clasp credentials
-        shell: bash
+      - name: Write credentials
         run: |
-          cat > ~/.clasprc.json << 'EOF'
-          ${{ secrets.CLASPRC_JSON }}
-          EOF
+          echo '${{ secrets.CLASPRC_JSON }}' > ~/.clasprc.json
+          echo '${{ secrets.CLASP_JSON }}' > .clasp.json
 
-          cat > .clasp.json << 'EOF'
-          ${{ secrets.CLASP_JSON }}
-          EOF
-
-      - name: Verify JSON
+      - name: Validate JSON
         run: |
-          cat ~/.clasprc.json
-          cat .clasp.json
+          python3 -m json.tool ~/.clasprc.json
+          python3 -m json.tool .clasp.json
 
-      - name: Push to Apps Script
+      - name: Push
         run: clasp push --force
