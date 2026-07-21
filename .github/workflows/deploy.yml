@@ -2,8 +2,7 @@ name: Deploy Apps Script
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
@@ -26,21 +25,21 @@ jobs:
 ${{ secrets.CLASPRC_JSON }}
 EOF
 
-      - name: Debug environment
+      - name: Debug
         run: |
-          echo "Current directory:"
-          pwd
+          echo "Node:"
+          node -v
+
+          echo "Clasp:"
+          clasp -v
 
           echo "Files:"
           ls -la
 
-          echo "Appsscript:"
+          echo "Manifest:"
           cat appsscript.json
 
-          echo "Clasp version:"
-          clasp -v
-
-          echo "Clasp status:"
+          echo "Status:"
           clasp status
 
       - name: Push
