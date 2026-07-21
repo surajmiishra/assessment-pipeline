@@ -16,17 +16,32 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install -g @google/clasp
+      - name: Install clasp
+        run: npm install -g @google/clasp
 
-      - name: Write credentials
+      - name: Restore authentication
+        shell: bash
         run: |
-          echo '${{ secrets.CLASPRC_JSON }}' > ~/.clasprc.json
-          echo '${{ secrets.CLASP_JSON }}' > .clasp.json
+          cat <<EOF > ~/.clasprc.json
+${{ secrets.CLASPRC_JSON }}
+EOF
 
-      - name: Validate JSON
+      - name: Debug environment
         run: |
-          python3 -m json.tool ~/.clasprc.json
-          python3 -m json.tool .clasp.json
+          echo "Current directory:"
+          pwd
+
+          echo "Files:"
+          ls -la
+
+          echo "Appsscript:"
+          cat appsscript.json
+
+          echo "Clasp version:"
+          clasp -v
+
+          echo "Clasp status:"
+          clasp status
 
       - name: Push
         run: clasp push --force
