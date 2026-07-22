@@ -70,11 +70,11 @@ jobs:
 
           # Create .clasp to point to the existing project
           cat > .clasp <<EOF
-{
-  "scriptId": "${SCRIPT_ID}",
-  "rootDir": "."
-}
-EOF
+          {
+            "scriptId": "${SCRIPT_ID}",
+            "rootDir": "."
+          }
+          EOF
           echo "Created .clasp contents:"
           cat .clasp
 
