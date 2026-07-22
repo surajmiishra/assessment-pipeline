@@ -58,7 +58,7 @@ jobs:
           echo "===== clasp Status (may fail if .clasp missing) ====="
           clasp status || true
 
-      - name: Prepare .clasp and sync remote
+      - name: Prepare .clasp configuration
         shell: bash
         env:
           SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
@@ -78,10 +78,15 @@ jobs:
           echo "Created .clasp contents:"
           cat .clasp
 
-          # Pull remote files to avoid duplicate-create conflicts. Don't fail the job if there's nothing to pull.
-          clasp pull --rootDir . || true
-
       - name: Deploy to Apps Script
         shell: bash
         run: |
+          # 1. Ignore hidden folders and GitHub Action files to prevent conflicts
+          cat > .claspignore <<EOF
+          .git/
+          .github/
+          node_modules/
+          EOF
+          
+          # 2. Force push the local repository to Apps Script
           clasp push --force
