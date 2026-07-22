@@ -1,0 +1,6 @@
+# Ignore temporary clasp files and duplicate manifests
+temp-clasp/
+# If you have other local files that shouldn't be pushed to Apps Script, list them here
+# For example:
+# node_modules/
+# .env
