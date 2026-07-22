@@ -10,15 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
+      # Install clasp
       - name: Install clasp
         run: npm install -g @google/clasp
 
+      # Restore authentication from GitHub Secret
       - name: Restore authentication
         shell: bash
         env:
@@ -26,22 +32,45 @@ jobs:
         run: |
           printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
 
-      - name: Debug
+      # Validate JSON
+      - name: Validate authentication JSON
+        shell: bash
         run: |
-          echo "Node:"
+          echo "===== First 3 lines of ~/.clasprc.json ====="
+          head -3 ~/.clasprc.json
+
+          echo ""
+          echo "===== Validating JSON ====="
+          node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('✅ JSON OK');"
+
+      # Show environment information
+      - name: Debug environment
+        shell: bash
+        run: |
+          echo "===== Node Version ====="
           node -v
 
-          echo "Clasp:"
+          echo ""
+          echo "===== npm Version ====="
+          npm -v
+
+          echo ""
+          echo "===== clasp Version ====="
           clasp -v
 
-          echo "Files:"
+          echo ""
+          echo "===== Repository Files ====="
           ls -la
 
-          echo "Manifest:"
+          echo ""
+          echo "===== appsscript.json ====="
           cat appsscript.json
 
-          echo "Status:"
+          echo ""
+          echo "===== clasp Status ====="
           clasp status
 
-      - name: Push
+      # Push to Apps Script
+      - name: Deploy to Apps Script
+        shell: bash
         run: clasp push --force
