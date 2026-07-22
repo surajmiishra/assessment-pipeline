@@ -10,21 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
-      # Install clasp
       - name: Install clasp
         run: npm install -g @google/clasp
 
-      # Restore authentication from GitHub Secret
       - name: Restore authentication
         shell: bash
         env:
@@ -32,45 +28,59 @@ jobs:
         run: |
           printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
 
-      # Validate JSON
       - name: Validate authentication JSON
         shell: bash
         run: |
           echo "===== First 3 lines of ~/.clasprc.json ====="
           head -3 ~/.clasprc.json
-
           echo ""
           echo "===== Validating JSON ====="
           node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('✅ JSON OK');"
 
-      # Show environment information
       - name: Debug environment
         shell: bash
         run: |
           echo "===== Node Version ====="
           node -v
-
           echo ""
           echo "===== npm Version ====="
           npm -v
-
           echo ""
           echo "===== clasp Version ====="
-          clasp -v
-
+          clasp -v || true
           echo ""
           echo "===== Repository Files ====="
           ls -la
-
           echo ""
           echo "===== appsscript.json ====="
-          cat appsscript.json
-
+          cat appsscript.json || true
           echo ""
-          echo "===== clasp Status ====="
-          clasp status
+          echo "===== clasp Status (may fail if .clasp missing) ====="
+          clasp status || true
 
-      # Push to Apps Script
+      - name: Prepare .clasp and sync remote
+        shell: bash
+        env:
+          SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
+        run: |
+          if [ -z "$SCRIPT_ID" ]; then
+            echo "ERROR: SCRIPT_ID secret is not set"
+            exit 1
+          fi
+
+          # Create .clasp to point to the existing project
+          cat > .clasp <<EOF
+{
+  "scriptId": "${SCRIPT_ID}",
+  "rootDir": "."
+}
+EOF
+          echo "Created .clasp contents:"
+          cat .clasp
+
+          # Pull remote files to avoid duplicate-create conflicts. Don't fail the job if there's nothing to pull.
+          clasp pull --rootDir . || true
+
       - name: Deploy to Apps Script
         shell: bash
         run: |
